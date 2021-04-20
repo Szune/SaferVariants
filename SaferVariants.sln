@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaferVariants", "SaferVariants\SaferVariants.csproj", "{059DE9BA-61BE-4D89-898A-BC06E6CD98A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaferVariants.Tests", "SaferVariants.Tests\SaferVariants.Tests.csproj", "{955FDF72-FA57-4C05-8169-1C64B0DC198D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{059DE9BA-61BE-4D89-898A-BC06E6CD98A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{059DE9BA-61BE-4D89-898A-BC06E6CD98A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{059DE9BA-61BE-4D89-898A-BC06E6CD98A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{059DE9BA-61BE-4D89-898A-BC06E6CD98A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{955FDF72-FA57-4C05-8169-1C64B0DC198D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{955FDF72-FA57-4C05-8169-1C64B0DC198D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{955FDF72-FA57-4C05-8169-1C64B0DC198D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{955FDF72-FA57-4C05-8169-1C64B0DC198D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
