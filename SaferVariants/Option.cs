@@ -9,19 +9,19 @@ namespace SaferVariants
         bool IsSome();
     }
     
-    public static class Option<T>
+    internal static class Option<T>
     {
-        internal static readonly None<T> None = new None<T>();
+        internal static readonly IOption<T> None = new None<T>();
     }
 
     public static class Option
     {
-        public static Some<T> Some<T>(T value)
+        public static IOption<T> Some<T>(T value)
         {
             return new Some<T>(value);
         }
 
-        public static None<T> None<T>()
+        public static IOption<T> None<T>()
         {
             return Option<T>.None;
         }

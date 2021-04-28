@@ -11,12 +11,12 @@ namespace SaferVariants
     
     public static class Result
     {
-        public static Ok<TValue, TError> Ok<TValue, TError>(TValue value)
+        public static IResult<TValue, TError> Ok<TValue, TError>(TValue value)
         {
             return new Ok<TValue, TError>(value);
         }
         
-        public static Err<TValue, TError> Err<TValue, TError>(TError error)
+        public static IResult<TValue, TError> Err<TValue, TError>(TError error)
         {
             return new Err<TValue, TError>(error);
         }
