@@ -84,6 +84,7 @@ else
 
 ## 2. Returning/creating IOption/IResult values
 ### Returning/creating IOption
+Using `Option.None()` or `Option.Some()`
 ```c#
 IOption<int> GetLength(string s)
 {
@@ -95,6 +96,14 @@ IOption<int> GetLength(string s)
 }
 ```
 
+Using `Option.NoneIfNull()`
+```c#
+IOption<string> ReplaceWorldWithBird(string s)
+{
+    // can infer type!
+    return Option.NoneIfNull(s?.Replace("world", "bird"));
+}
+```
 ### Returning/creating IResult
 ```c#
 IResult<int,string> GetLength(string s)

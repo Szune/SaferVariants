@@ -7,7 +7,7 @@
     <PropertyGroup>
         <!-- NuGet stuff -->
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.1.0</PackageVersion>
+        <PackageVersion>1.2.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -17,7 +17,7 @@
         <Description>
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
-        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <PackageReleaseNotes>Adds Option.NoneIfNull()</PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>
 

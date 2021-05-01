@@ -25,6 +25,16 @@ namespace SaferVariants
         {
             return Option<T>.None;
         }
+        
+        /// <summary>
+        /// Returns <see cref="SaferVariants.None{T}"/> if the value is null, returns <see cref="SaferVariants.Some{T}"/> otherwise 
+        /// </summary>
+        public static IOption<T> NoneIfNull<T>(T value)
+        {
+            return value != null 
+                ? new Some<T>(value)
+                : Option<T>.None;
+        }
     }
     
     public readonly struct Some<T> : IOption<T>
