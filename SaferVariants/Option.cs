@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace SaferVariants
 {
@@ -8,7 +9,7 @@ namespace SaferVariants
         T ValueOr(T elseValue);
         bool IsSome();
     }
-    
+
     internal static class Option<T>
     {
         internal static readonly IOption<T> None = new None<T>();
@@ -25,18 +26,35 @@ namespace SaferVariants
         {
             return Option<T>.None;
         }
-        
+
         /// <summary>
         /// Returns <see cref="SaferVariants.None{T}"/> if the value is null, returns <see cref="SaferVariants.Some{T}"/> otherwise 
         /// </summary>
         public static IOption<T> NoneIfNull<T>(T value)
         {
-            return value != null 
+            return value != null
                 ? new Some<T>(value)
                 : Option<T>.None;
         }
+
+        public static InvalidOptionVariantException Invalid([CallerMemberName] string method = "",
+            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0) =>
+            new InvalidOptionVariantException(method, filePath, lineNumber);
+
+        public static void EnsureValid<T>(IOption<T> value, [CallerMemberName] string method = "",
+            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            switch (value)
+            {
+                case Some<T> _:
+                case None<T> _:
+                    break;
+                default:
+                    throw Invalid(method, filePath, lineNumber);
+            }
+        }
     }
-    
+
     public readonly struct Some<T> : IOption<T>
     {
         public Some(T value)
@@ -45,7 +63,7 @@ namespace SaferVariants
         }
 
         public T Value { get; }
-        
+
         public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
         {
             return transform(Value);
@@ -61,7 +79,7 @@ namespace SaferVariants
             return true;
         }
     }
-    
+
     public struct None<T> : IOption<T>
     {
         public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)

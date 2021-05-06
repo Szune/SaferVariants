@@ -1,9 +1,50 @@
-﻿using Xunit;
+﻿using System;
+using SaferVariants.Extensions;
+using Xunit;
 
 namespace SaferVariants.Tests
 {
     public class OptionTests
     {
+        
+        private class InvalidVariant : IOption<string>
+        {
+            public IOption<TResult> Map<TResult>(Func<string, IOption<TResult>> transform) => throw new NotImplementedException();
+
+            public string ValueOr(string elseValue) => throw new NotImplementedException();
+
+            public bool IsSome() => throw new NotImplementedException();
+        }
+        
+        [Fact]
+        public void EnsureValid_ShouldNotThrow_IfValidVariant()
+        {
+            var sut = Option.Some("hej").EnsureValid();
+            sut = Option.None<string>().EnsureValid();
+            Option.EnsureValid(sut);
+            Assert.Equal("", sut.ValueOr(""));
+        }
+        
+        [Fact]
+        public void EnsureValid_ShouldThrow_IfInvalidVariant()
+        {
+            IOption<string> sut = new InvalidVariant();
+            void Act() => sut.EnsureValid();
+            Assert.Throws<InvalidOptionVariantException>(Act);
+            void Act2() => Option.EnsureValid(sut);
+            Assert.Throws<InvalidOptionVariantException>(Act2);
+        }
+        
+        [Fact]
+        public void EnsureValid_ShouldThrow_IfNull()
+        {
+            IOption<string> sut = null;
+            void Act() => sut.EnsureValid();
+            Assert.Throws<InvalidOptionVariantException>(Act);
+            void Act2() => Option.EnsureValid(sut);
+            Assert.Throws<InvalidOptionVariantException>(Act2);
+        }
+        
         [Fact]
         public void NoneIfNull_ShouldReturnNone_WhenArgumentIsNull()
         {
@@ -17,6 +58,35 @@ namespace SaferVariants.Tests
             var sut = Option.NoneIfNull("hello test");
             Assert.IsType<Some<string>>(sut);
             Assert.Equal("hello test", sut.ValueOr(""));
+        }
+        
+        [Fact]
+        public void Invalid_ShouldReturn_Exception()
+        {
+            // more of a reminder than a test
+            IOption<string> sut = null;
+            switch (sut)
+            {
+                case Some<string> s:
+                    break;
+                case None<string>:
+                    break;
+                default:
+                    Action act = () => throw Option.Invalid();
+                    Assert.Throws<InvalidOptionVariantException>(act);
+                    break;
+            }
+
+            Action throwAgain = () =>
+            {
+                var test = sut switch
+                {
+                    Some<string> => "hello",
+                    None<string> => "world",
+                    _ => throw Option.Invalid(),
+                };
+            };
+            Assert.Throws<InvalidOptionVariantException>(throwAgain);
         }
     }
 }

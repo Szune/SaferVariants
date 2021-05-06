@@ -2,12 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
+        <Configuration>Release</Configuration>
     </PropertyGroup>
     
     <PropertyGroup>
         <!-- NuGet stuff -->
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.2.0</PackageVersion>
+        <PackageVersion>1.3.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -17,7 +18,12 @@
         <Description>
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
-        <PackageReleaseNotes>Adds Option.NoneIfNull()</PackageReleaseNotes>
+        <PackageReleaseNotes>
+Adds EnsureValid() and extensions for simplified pattern matching.
+By calling EnsureValid() on an IOption or IResult, that instance can be pattern matched against only the valid variants.
+E.g. var result = GetResult().EnsureValid();
+At this point, it is possible to pattern match only on the Ok or Err variant.
+        </PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>
 

@@ -33,6 +33,20 @@ else
 ### Pattern matching an `IResult<TValue,TError>`
 A little more involved, depending on usage:
 
+#### switch with EnsureValid()
+```c#
+IResult<int,string> length = GetLength().EnsureValid();
+switch (length)
+{
+    case Ok<int,string> ok:
+        Console.WriteLine($"The length was {ok.Value}");
+        break;
+    case Err<int,string> err:
+        Console.WriteLine($"Failed to get length: {err.Error}");
+        break;
+} // the default case can be left out because of the EnsureValid() call
+```
+
 #### switch
 ```c#
 IResult<int,string> length = GetLength();
@@ -65,11 +79,13 @@ else if (length is Err<int,string> err)
 }
 else
 {
-    throw new NotImplementedException();
+    // or do `length = GetLength().EnsureValid();` before the ifs,
+    // at which point this whole else block can be removed
+    throw Result.Invalid(); 
 }
 ```
 
-#### if -> else (consider using IOption instead if the error is not used)
+#### if -> else (consider using IOption instead if the error is never used)
 ```c#
 // if->else
 if (length is Ok<int,string> some)

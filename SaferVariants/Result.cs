@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace SaferVariants
 {
@@ -8,20 +9,37 @@ namespace SaferVariants
         TValue ValueOr(TValue elseValue);
         bool IsOk();
     }
-    
+
     public static class Result
     {
         public static IResult<TValue, TError> Ok<TValue, TError>(TValue value)
         {
             return new Ok<TValue, TError>(value);
         }
-        
+
         public static IResult<TValue, TError> Err<TValue, TError>(TError error)
         {
             return new Err<TValue, TError>(error);
         }
+
+        public static InvalidResultVariantException Invalid([CallerMemberName] string method = "",
+            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0) =>
+            new InvalidResultVariantException(method, filePath, lineNumber);
+        
+        public static void EnsureValid<TValue,TError>(IResult<TValue,TError> value, [CallerMemberName] string method = "",
+            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        {
+            switch (value)
+            {
+                case Ok<TValue,TError> _:
+                case Err<TValue,TError> _:
+                    break;
+                default:
+                    throw Invalid(method, filePath, lineNumber);
+            }
+        }
     }
-    
+
     public readonly struct Ok<TValue, TError> : IResult<TValue, TError>
     {
         public Ok(TValue value)
@@ -46,7 +64,7 @@ namespace SaferVariants
             return true;
         }
     }
-    
+
     public readonly struct Err<TValue, TError> : IResult<TValue, TError>
     {
         public Err(TError error)
