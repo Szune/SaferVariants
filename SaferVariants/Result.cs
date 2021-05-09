@@ -6,8 +6,12 @@ namespace SaferVariants
     public interface IResult<TValue, TError>
     {
         IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform);
+        void Then(Action<TValue> action);
         TValue ValueOr(TValue elseValue);
+        bool IsOk(out TValue value);
         bool IsOk();
+        bool IsErr(out TError error);
+        bool IsErr();
     }
 
     public static class Result
@@ -54,14 +58,36 @@ namespace SaferVariants
             return transform(Value);
         }
 
+        public void Then(Action<TValue> action)
+        {
+            action(Value);
+        }
+
         public TValue ValueOr(TValue elseValue)
         {
             return Value;
         }
 
+        public bool IsOk(out TValue value)
+        {
+            value = Value;
+            return true;
+        }
+
         public bool IsOk()
         {
             return true;
+        }
+
+        public bool IsErr(out TError error)
+        {
+            error = default;
+            return false;
+        }
+
+        public bool IsErr()
+        {
+            return false;
         }
     }
 
@@ -79,14 +105,35 @@ namespace SaferVariants
             return Result.Err<TResult, TError>(Error);
         }
 
+        public void Then(Action<TValue> action)
+        {
+        }
+
         public TValue ValueOr(TValue elseValue)
         {
             return elseValue;
         }
 
+        public bool IsOk(out TValue value)
+        {
+            value = default;
+            return false;
+        }
+
         public bool IsOk()
         {
             return false;
+        }
+
+        public bool IsErr(out TError error)
+        {
+            error = Error;
+            return true;
+        }
+
+        public bool IsErr()
+        {
+            return true;
         }
     }
 }

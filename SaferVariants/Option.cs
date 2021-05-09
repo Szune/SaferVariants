@@ -6,7 +6,9 @@ namespace SaferVariants
     public interface IOption<T>
     {
         IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform);
+        void Then(Action<T> action);
         T ValueOr(T elseValue);
+        bool IsSome(out T value);
         bool IsSome();
     }
 
@@ -69,6 +71,17 @@ namespace SaferVariants
             return transform(Value);
         }
 
+        public bool IsSome(out T value)
+        {
+            value = Value;
+            return true;
+        }
+
+        public void Then(Action<T> action)
+        {
+            action(Value);
+        }
+
         public T ValueOr(T elseValue)
         {
             return Value;
@@ -85,6 +98,16 @@ namespace SaferVariants
         public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
         {
             return Option.None<TResult>();
+        }
+        
+        public bool IsSome(out T value)
+        {
+            value = default;
+            return false;
+        }
+        
+        public void Then(Action<T> action)
+        {
         }
 
         public T ValueOr(T elseValue)

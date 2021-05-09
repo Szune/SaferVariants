@@ -8,7 +8,7 @@
     <PropertyGroup>
         <!-- NuGet stuff -->
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.3.0</PackageVersion>
+        <PackageVersion>1.4.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -19,12 +19,12 @@
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
         <PackageReleaseNotes>
-Adds EnsureValid() and extensions for simplified pattern matching.
-By calling EnsureValid() on an IOption or IResult, that instance can be pattern matched against only the valid variants.
-E.g. var result = GetResult().EnsureValid();
-At this point, it is possible to pattern match only on the Ok or Err variant.
+Adds Then(action) and IsSome(out value) to Option
+Adds Then(action), IsOk(out value) and IsErr(out error) to Result
+            
+These were added for improved ergonomics and do not change the core idea of the library:
+Accessing the value can only happen after checking if it is present
         </PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>
-
 </Project>

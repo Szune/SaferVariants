@@ -23,9 +23,28 @@ namespace SaferVariants.Tests
         }
         
         [Fact]
+        public void Then_ShouldPerformAction_ForSomeVariant()
+        {
+            var i = 0;
+            Option.Some("maybe").Then(_ => i += 1);
+            Assert.Equal(1, i);
+        }
+        
+        [Fact]
+        public void IsSomeWithOutBinding_ShouldBeTrueAndBindValue_ForSomeVariant()
+        {
+            var sut = Option.Some("hello");
+            if (sut.IsSome(out var val))
+            {
+                Assert.Equal("hello", val);
+            }
+            Assert.True(sut.IsSome(out _));
+        }
+        
+        [Fact]
         public void IsSome_ShouldBeTrue_ForSomeVariant()
         {
-            IOption<string> sut = Option.Some("hello");
+            var sut = Option.Some("hello");
             Assert.True(sut.IsSome());
         }
         

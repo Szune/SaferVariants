@@ -9,8 +9,27 @@ namespace SaferVariants.Tests
         private class InvalidVariant : IResult<string, int>
         {
             public IResult<TResult, int> Map<TResult>(Func<string, IResult<TResult, int>> transform) => throw new NotImplementedException();
+            public void Then(Action<string> action)
+            {
+                throw new NotImplementedException();
+            }
+
             public string ValueOr(string elseValue) => throw new NotImplementedException();
+            public bool IsOk(out string value)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool IsOk() => throw new NotImplementedException();
+            public bool IsErr(out int error)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsErr()
+            {
+                throw new NotImplementedException();
+            }
         }
         
         [Fact]

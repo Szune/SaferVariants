@@ -23,6 +23,23 @@ namespace SaferVariants.Tests
         }
         
         [Fact]
+        public void Then_ShouldBeNoOp_ForNoneVariant()
+        {
+            Option.None<string>().Then(_ => Assert.True(false));
+        }
+        
+        [Fact]
+        public void IsSomeWithOutBinding_ShouldBeFalseAndNotBindValue_ForNoneVariant()
+        {
+            var sut = Option.None<string>();
+            if (sut.IsSome(out var val))
+            {
+                Assert.True(false);
+            }
+            Assert.False(sut.IsSome(out _));
+        }
+        
+        [Fact]
         public void IsSome_ShouldBeFalse_ForNoneVariant()
         {
             IOption<object> sut = Option.None<object>();

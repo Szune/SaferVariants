@@ -10,6 +10,15 @@ namespace SaferVariants.Tests
         private class InvalidVariant : IOption<string>
         {
             public IOption<TResult> Map<TResult>(Func<string, IOption<TResult>> transform) => throw new NotImplementedException();
+            public bool IsSome(out string value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Then(Action<string> action)
+            {
+                throw new NotImplementedException();
+            }
 
             public string ValueOr(string elseValue) => throw new NotImplementedException();
 

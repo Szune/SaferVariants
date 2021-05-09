@@ -10,11 +10,53 @@ Currently, the way that that is achieved is by having an interface that can eith
 Inspired by the programming language [Rust](https://www.rust-lang.org/).
 
 ## Code
-1. Pattern matching
-2. Returning/creating IOption/IResult values
-3. Using Map()
+1. Option.IsSome(out value), Result.IsOk(out value), Result.IsErr(out error)
+2. Pattern matching
+3. Returning/creating IOption/IResult values
+4. Using Map() and ValueOr()
+5. Using Then()
 
-## 1. Pattern matching
+## 1. Option.IsSome(out value), Result.IsOk(out value), Result.IsErr(out error)
+### Option.IsSome
+```c#
+IOption<int> length = GetLength();
+if (length.IsSome(out var value))
+{
+    Console.WriteLine($"The length was {value}");
+}
+else
+{
+    Console.WriteLine("Failed to get length");
+}
+```
+
+### Result.IsOk
+```c#
+IResult<int,string> length = GetLength();
+if (length.IsOk(out var value))
+{
+    Console.WriteLine($"The length was {value}");
+}
+else
+{
+    Console.WriteLine("Failed to get length");
+}
+```
+
+### Result.IsErr
+```c#
+IResult<int,string> length = GetLength().EnsureValid();
+if (length.IsOk(out var value))
+{
+    Console.WriteLine($"The length was {value}");
+}
+else if (length.IsErr(out var error))
+{
+    Console.WriteLine($"Failed to get length: {error}");
+}
+```
+
+## 2. Pattern matching
 ### Pattern matching an `IOption<T>`
 Very straightforward:
 
@@ -98,7 +140,7 @@ else
 }
 ```
 
-## 2. Returning/creating IOption/IResult values
+## 3. Returning/creating IOption/IResult values
 ### Returning/creating IOption
 Using `Option.None()` or `Option.Some()`
 ```c#
@@ -135,7 +177,7 @@ IResult<int,string> GetLength(string s)
 }
 ```
 
-## 3. Using Map() and ValueOr()
+## 4. Using Map() and ValueOr()
 ### On an IOption
 ```c#
 // you'd normally use `var` instead of typing out the whole type
@@ -167,4 +209,17 @@ if (length is Err<int,EType> err)
 {
     Console.WriteLine($"There was an error btw, {err.Error}");
 }
+```
+
+## 5. Using Then()
+Performs an action if the Option/Result was Some/Ok.
+
+Useful when you don't have to handle the none/error case.
+
+```c#
+IOption<int> length = GetLength()
+    .Then(len => Console.WriteLine($"Length: {len}"));
+
+IResult<int,int> length2 = GetLength2()
+    .Then(len => Console.WriteLine($"Length2: {len}"));
 ```
