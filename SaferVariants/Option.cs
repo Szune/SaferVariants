@@ -5,10 +5,26 @@ namespace SaferVariants
 {
     public interface IOption<T>
     {
+        /// <summary>
+        /// If the IOption is <see cref="Some{T}"/>, the transform is applied to the inner value and returned as a new IOption.
+        /// </summary>
+        /// <param name="transform">The transformation to apply to the value.</param>
         IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform);
+        /// <summary>
+        /// If the IOption is <see cref="Some{T}"/>, the continuation is applied to the inner value.
+        /// </summary>
         void Then(Action<T> action);
+        /// <summary>
+        /// Returns the inner value if the IOption is <see cref="Some{T}"/>, returns the specified <paramref name="elseValue"/> otherwise.
+        /// </summary>
         T ValueOr(T elseValue);
+        /// <summary>
+        /// Returns true and binds the inner value to the out variable <paramref name="value"/> if the IOption is <see cref="Some{T}"/>, returns false otherwise.
+        /// </summary>
         bool IsSome(out T value);
+        /// <summary>
+        /// Returns true if the IOption is <see cref="Some{T}"/>, returns false otherwise.
+        /// </summary>
         bool IsSome();
     }
 
@@ -30,7 +46,7 @@ namespace SaferVariants
         }
 
         /// <summary>
-        /// Returns <see cref="SaferVariants.None{T}"/> if the value is null, returns <see cref="SaferVariants.Some{T}"/> otherwise 
+        /// Returns <see cref="SaferVariants.None{T}"/> if the value is null, returns the value wrapped in <see cref="SaferVariants.Some{T}"/> otherwise.
         /// </summary>
         public static IOption<T> NoneIfNull<T>(T value)
         {
@@ -43,6 +59,10 @@ namespace SaferVariants
             [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0) =>
             new InvalidOptionVariantException(method, filePath, lineNumber);
 
+        /// <summary>
+        /// Ensures that the <see cref="IOption{T}"/> is a valid option variant, throws an exception otherwise.
+        /// </summary>
+        /// <exception cref="InvalidOptionVariantException"></exception>
         public static void EnsureValid<T>(IOption<T> value, [CallerMemberName] string method = "",
             [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {

@@ -7,8 +7,9 @@
     
     <PropertyGroup>
         <!-- NuGet stuff -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.4.0</PackageVersion>
+        <PackageVersion>1.5.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
