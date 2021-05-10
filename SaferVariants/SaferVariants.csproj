@@ -20,11 +20,7 @@
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
         <PackageReleaseNotes>
-Adds Then(action) and IsSome(out value) to Option
-Adds Then(action), IsOk(out value) and IsErr(out error) to Result
-            
-These were added for improved ergonomics and do not change the core idea of the library:
-Accessing the value can only happen after checking if it is present
+Adds more docs and ergonomic extensions.
         </PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>

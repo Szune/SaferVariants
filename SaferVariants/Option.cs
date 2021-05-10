@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace SaferVariants
 {
+    /// <summary>
+    /// Intended as a discriminated union of either <see cref="Some{T}"/> or <see cref="None{T}"/>.
+    /// </summary>
     public interface IOption<T>
     {
         /// <summary>

@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace SaferVariants
 {
+    /// <summary>
+    /// Intended as a discriminated union of either <see cref="Ok{TValue,TError}"/> or <see cref="Err{TValue,TError}"/>.
+    /// </summary>
     public interface IResult<TValue, TError>
     {
         /// <summary>
