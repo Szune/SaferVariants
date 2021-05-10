@@ -7,7 +7,7 @@ namespace SaferVariants.Tests
         [Fact]
         public void PatternMatchingOnSome()
         {
-            IOption<string> sut = Option.Some("hello");
+            var sut = Option.Some("hello");
             if (sut is not Some<string>)
             {
                 Assert.True(false, "We have a problem");
@@ -17,9 +17,17 @@ namespace SaferVariants.Tests
         [Fact]
         public void Map_ShouldBeNewValue_ForSomeVariant()
         {
-            IOption<string> sut = Option.Some("hello_world");
+            var sut = Option.Some("hello_world");
             var result = sut.Map(s => Option.Some(s.Length));
             Assert.Equal("hello_world".Length, result.ValueOr(0));
+        }
+        
+        [Fact]
+        public void MapOr_ShouldBeNewValue_ForSomeVariant()
+        {
+            var sut = Option.Some("hello_world");
+            var result = sut.MapOr(0, s => s.Length);
+            Assert.Equal("hello_world".Length, result);
         }
         
         [Fact]
@@ -51,7 +59,7 @@ namespace SaferVariants.Tests
         [Fact]
         public void ValueOr_ShouldBeValueFromSome_ForSomeVariant()
         {
-            IOption<string> sut = Option.Some("hello");
+            var sut = Option.Some("hello");
             Assert.Equal("hello", sut.ValueOr("something else"));
         }
         

@@ -13,6 +13,14 @@ namespace SaferVariants
         /// </summary>
         /// <param name="transform">The transformation to apply to the value.</param>
         IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform);
+        
+        /// <summary>
+        /// If the IOption is <see cref="Some{T}"/>, the transform is applied to the inner value and the new value is returned, returns the specified <paramref name="elseValue"/> otherwise.
+        /// </summary>
+        /// <param name="elseValue">The value to return if the IOption is of type <see cref="None{T}"/>.</param>
+        /// <param name="transform">The transformation to apply to the value.</param>
+        TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform);
+        
         /// <summary>
         /// If the IOption is <see cref="Some{T}"/>, the continuation is applied to the inner value.
         /// </summary>
@@ -80,6 +88,7 @@ namespace SaferVariants
         }
     }
 
+    ///<inheritdoc cref="IOption{T}"/>
     public readonly struct Some<T> : IOption<T>
     {
         public Some(T value)
@@ -91,6 +100,15 @@ namespace SaferVariants
 
         public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
         {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return transform(Value);
+        }
+
+        public TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
             return transform(Value);
         }
 
@@ -102,6 +120,8 @@ namespace SaferVariants
 
         public void Then(Action<T> action)
         {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
             action(Value);
         }
 
@@ -116,13 +136,23 @@ namespace SaferVariants
         }
     }
 
+    ///<inheritdoc cref="IOption{T}"/>
     public struct None<T> : IOption<T>
     {
         public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
         {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
             return Option.None<TResult>();
         }
-        
+
+        public TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return elseValue;
+        }
+
         public bool IsSome(out T value)
         {
             value = default;
@@ -131,6 +161,8 @@ namespace SaferVariants
         
         public void Then(Action<T> action)
         {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
         }
 
         public T ValueOr(T elseValue)

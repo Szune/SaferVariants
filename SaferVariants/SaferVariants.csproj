@@ -9,7 +9,7 @@
         <!-- NuGet stuff -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.5.0</PackageVersion>
+        <PackageVersion>1.6.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -20,7 +20,7 @@
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
         <PackageReleaseNotes>
-Adds more docs and ergonomic extensions.
+Adds IOption.MapOr(), IResult.MapOr() and IResult.HandleError(), null checks on delegates
         </PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>

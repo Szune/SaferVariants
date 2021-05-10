@@ -31,6 +31,14 @@ namespace SaferVariants.Tests
             var result = sut.Map(s => Result.Ok<byte, int>((byte) s));
             Assert.Equal(1, result.ValueOr(0));
         }
+        
+        [Fact]
+        public void MapOr_ShouldReturnTransformedValue_ForOkVariant()
+        {
+            var sut = Result.Ok<string, string>("yes");
+            var result = sut.MapOr(0, value => value.Length);
+            Assert.Equal(3, result);
+        }
 
         [Fact]
         public void Map_ShouldBeNewErr_ForOkVariantMapReturningErr()
@@ -45,6 +53,21 @@ namespace SaferVariants.Tests
             {
                 Assert.True(false, "We have a problem");
             }
+        }
+        
+        [Fact]
+        public void HandleError_ShouldNotCallErrorHandler_ForOkVariant()
+        {
+            var i = 0;
+            Result.Ok<string, int>("LGTM").HandleError(_ => i += 1);
+            Assert.Equal(0, i);
+        }
+        
+        [Fact]
+        public void HandleError_ShouldReturnSome_ForOkVariant()
+        {
+            var sut = Result.Ok<string, int>("LGTM").HandleError(_ => { });
+            Assert.Equal("LGTM", sut.ValueOr(""));
         }
 
         [Fact]

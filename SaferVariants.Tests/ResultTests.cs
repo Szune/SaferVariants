@@ -9,6 +9,16 @@ namespace SaferVariants.Tests
         private class InvalidVariant : IResult<string, int>
         {
             public IResult<TResult, int> Map<TResult>(Func<string, IResult<TResult, int>> transform) => throw new NotImplementedException();
+            public TResult MapOr<TResult>(TResult elseValue, Func<string, TResult> transform)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IOption<string> HandleError(Action<int> errorHandler)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Then(Action<string> action)
             {
                 throw new NotImplementedException();
@@ -59,6 +69,26 @@ namespace SaferVariants.Tests
             Assert.Throws<InvalidResultVariantException>(Act);
             void Act2() => Result.EnsureValid(sut);
             Assert.Throws<InvalidResultVariantException>(Act2);
+        }
+
+        [Fact]
+        public void OkVariant_ShouldThrow_IfDelegateArgumentIsNull()
+        {
+            var sut = Result.Ok<object, object>(new object());
+            Assert.Throws<ArgumentNullException>(() => sut.Map<object>(null));
+            Assert.Throws<ArgumentNullException>(() => sut.MapOr(new object(), null));
+            Assert.Throws<ArgumentNullException>(() => sut.HandleError(null));
+            Assert.Throws<ArgumentNullException>(() => sut.Then(null));
+        }
+        
+        [Fact]
+        public void ErrVariant_ShouldThrow_IfDelegateArgumentIsNull()
+        {
+            var sut = Result.Err<object, object>(new object());
+            Assert.Throws<ArgumentNullException>(() => sut.Map<object>(null));
+            Assert.Throws<ArgumentNullException>(() => sut.MapOr(new object(), null));
+            Assert.Throws<ArgumentNullException>(() => sut.HandleError(null));
+            Assert.Throws<ArgumentNullException>(() => sut.Then(null));
         }
         
         [Fact]

@@ -13,6 +13,20 @@ namespace SaferVariants
         /// </summary>
         /// <param name="transform">The transformation to apply to the value.</param>
         IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform);
+
+        /// <summary>
+        /// If the IResult is <see cref="Ok{TValue,TError}"/>, the transform is applied to the inner value and the new value is returned, returns the specified <paramref name="elseValue"/> otherwise.
+        /// </summary>
+        /// <param name="elseValue">The value to return if the IResult is of type <see cref="Err{TValue,TError}"/>.</param>
+        /// <param name="transform">The transformation to apply to the value.</param>
+        TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform);
+
+        /// <summary>
+        /// If the IResult is <see cref="Err{TValue,TError}"/>, calls the specified error handler and returns <see cref="None{T}"/>, returns <see cref="Some{T}"/> otherwise.
+        /// </summary>
+        /// <param name="errorHandler">The error handler.</param>
+        IOption<TValue> HandleError(Action<TError> errorHandler);
+        
         /// <summary>
         /// If the IResult is <see cref="Ok{TValue,TError}"/>, the continuation is applied to the inner value.
         /// </summary>
@@ -73,6 +87,7 @@ namespace SaferVariants
         }
     }
 
+    ///<inheritdoc cref="IResult{TValue,TError}"/>
     public readonly struct Ok<TValue, TError> : IResult<TValue, TError>
     {
         public Ok(TValue value)
@@ -84,11 +99,29 @@ namespace SaferVariants
 
         public IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform)
         {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
             return transform(Value);
+        }
+
+        public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return transform(Value);
+        }
+
+        public IOption<TValue> HandleError(Action<TError> errorHandler)
+        {
+            if (errorHandler == null)
+                throw new ArgumentNullException(nameof(errorHandler));
+            return Option.Some(Value);
         }
 
         public void Then(Action<TValue> action)
         {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
             action(Value);
         }
 
@@ -120,6 +153,7 @@ namespace SaferVariants
         }
     }
 
+    ///<inheritdoc cref="IResult{TValue,TError}"/>
     public readonly struct Err<TValue, TError> : IResult<TValue, TError>
     {
         public Err(TError error)
@@ -131,11 +165,31 @@ namespace SaferVariants
 
         public IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform)
         {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
             return Result.Err<TResult, TError>(Error);
+        }
+
+        public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return elseValue;
+        }
+
+        public IOption<TValue> HandleError(Action<TError> errorHandler)
+        {
+            if (errorHandler == null)
+                throw new ArgumentNullException(nameof(errorHandler));
+            
+            errorHandler.Invoke(Error);
+            return Option.None<TValue>();
         }
 
         public void Then(Action<TValue> action)
         {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
         }
 
         public TValue ValueOr(TValue elseValue)

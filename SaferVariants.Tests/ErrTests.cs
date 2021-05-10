@@ -23,6 +23,29 @@ namespace SaferVariants.Tests
         }
 
         [Fact]
+        public void MapOr_ShouldReturnElseValue_ForErrVariant()
+        {
+            var sut = Result.Err<int, string>("no");
+            var result = sut.MapOr(1, value => value * value);
+            Assert.Equal(1, result);
+        }
+        
+        [Fact]
+        public void HandleError_ShouldCallErrorHandler_ForErrVariant()
+        {
+            var i = 0;
+            Result.Err<int, string>("LBTM").HandleError(_ => i += 1);
+            Assert.Equal(1, i);
+        }
+        
+        [Fact]
+        public void HandleError_ShouldReturnNone_ForErrVariant()
+        {
+            var sut = Result.Err<string, int>(33).HandleError(_ => {});
+            Assert.False(sut.IsSome());
+        }
+
+        [Fact]
         public void Then_ShouldNotPerformAction_ForErrVariant()
         {
             Result.Err<string, int>(1).Then(_ => Assert.True(false));

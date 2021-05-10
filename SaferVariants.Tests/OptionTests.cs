@@ -10,6 +10,11 @@ namespace SaferVariants.Tests
         private class InvalidVariant : IOption<string>
         {
             public IOption<TResult> Map<TResult>(Func<string, IOption<TResult>> transform) => throw new NotImplementedException();
+            public TResult MapOr<TResult>(TResult elseValue, Func<string, TResult> transform)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool IsSome(out string value)
             {
                 throw new NotImplementedException();
@@ -52,6 +57,24 @@ namespace SaferVariants.Tests
             Assert.Throws<InvalidOptionVariantException>(Act);
             void Act2() => Option.EnsureValid(sut);
             Assert.Throws<InvalidOptionVariantException>(Act2);
+        }
+        
+        [Fact]
+        public void SomeVariant_ShouldThrow_IfDelegateArgumentIsNull()
+        {
+            var sut = Option.Some(new object());
+            Assert.Throws<ArgumentNullException>(() => sut.Map<object>(null));
+            Assert.Throws<ArgumentNullException>(() => sut.MapOr(new object(), null));
+            Assert.Throws<ArgumentNullException>(() => sut.Then(null));
+        }
+        
+        [Fact]
+        public void NoneVariant_ShouldThrow_IfDelegateArgumentIsNull()
+        {
+            var sut = Option.None<object>();
+            Assert.Throws<ArgumentNullException>(() => sut.Map<object>(null));
+            Assert.Throws<ArgumentNullException>(() => sut.MapOr(new object(), null));
+            Assert.Throws<ArgumentNullException>(() => sut.Then(null));
         }
         
         [Fact]

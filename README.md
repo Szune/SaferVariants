@@ -15,6 +15,7 @@ Inspired by the programming language [Rust](https://www.rust-lang.org/).
 3. Returning/creating IOption/IResult values
 4. Using Map() and ValueOr()
 5. Using Then()
+6. Using HandleError() for more fluent handling of IResult
 
 ## 1. Option.IsSome(out value), Result.IsOk(out value), Result.IsErr(out error)
 ### Option.IsSome
@@ -222,4 +223,23 @@ IOption<int> length = GetLength()
 
 IResult<int,int> length2 = GetLength2()
     .Then(len => Console.WriteLine($"Length2: {len}"));
+```
+
+## 6. Using HandleError() for more fluent handling of IResult
+
+HandleError() is mostly useful for error handling when method chaining:
+
+```c#
+// note: this is just an example, it is not production-ready!
+IOption<string> maybeEncrypted = 
+    CreateCryptographyService() // returns IResult<Crypto,InitError>
+        .HandleError(err => Console.WriteLine($"Crypto init error: {err}"))
+        .Map(crypto => 
+            crypto.Encrypt("secret message") // returns IResult<string,EncryptError>
+                  .HandleError(err => Console.WriteLine($"Encrypt error: {err}")));
+
+if (maybeEncrypted.IsSome(out var encrypted))
+{
+    // use encrypted
+}
 ```

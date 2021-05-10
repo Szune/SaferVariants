@@ -23,6 +23,14 @@ namespace SaferVariants.Tests
         }
         
         [Fact]
+        public void MapOr_ShouldReturnElseValue_ForNoneVariant()
+        {
+            var sut = Option.None<string>();
+            var result = sut.MapOr(-10, s => s.Length);
+            Assert.Equal(-10, result);
+        }
+        
+        [Fact]
         public void Then_ShouldBeNoOp_ForNoneVariant()
         {
             Option.None<string>().Then(_ => Assert.True(false));
