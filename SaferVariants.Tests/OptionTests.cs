@@ -15,6 +15,11 @@ namespace SaferVariants.Tests
                 throw new NotImplementedException();
             }
 
+            public IOption<string> HandleNone(Action noneHandler)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool IsSome(out string value)
             {
                 throw new NotImplementedException();

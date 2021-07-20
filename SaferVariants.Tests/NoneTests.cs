@@ -60,5 +60,14 @@ namespace SaferVariants.Tests
             IOption<string> sut = Option.None<string>();
             Assert.Equal("something else", sut.ValueOr("something else"));
         }
+        
+        [Fact]
+        public void HandleNone_ShouldPerformAction_ForNoneVariant()
+        {
+            var i = 0;
+            var sut = Option.None<string>();
+            sut.HandleNone(() => i++);
+            Assert.Equal(1, i);
+        }
     }
 }

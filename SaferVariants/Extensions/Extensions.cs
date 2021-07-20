@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace SaferVariants.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for the <see cref="IOption{T}"/> and <see cref="IResult{TValue,TError}"/> interfaces.
+    /// </summary>
     public static class Extensions
     {
         /// <summary>
@@ -64,6 +67,34 @@ namespace SaferVariants.Extensions
                 throw new ArgumentNullException(nameof(value));
             }
             return Result.Err<T, E>(value);
+        }
+        
+        /// <summary>
+        /// Returns the inner <see cref="IOption{T}"/>. An invalid variant throws an exception.
+        /// </summary>
+        /// <exception cref="InvalidOptionVariantException"></exception>
+        public static IOption<T> Flatten<T>(this IOption<IOption<T>> option)
+        {
+            return option switch
+            {
+                Some<IOption<T>> s => s.Value,
+                None<IOption<T>> _ => Option.None<T>(),
+                _ => throw Option.Invalid(),
+            };
+        }
+        
+        /// <summary>
+        /// Returns the inner <see cref="IResult{TValue,TError}"/>. An invalid variant throws an exception.
+        /// </summary>
+        /// <exception cref="InvalidResultVariantException"></exception>
+        public static IResult<T,E> Flatten<T,E>(this IResult<IResult<T,E>,E> result)
+        {
+            return result switch
+            {
+                Ok<IResult<T, E>,E> ok => ok.Value,
+                Err<IResult<T, E>,E> err => Result.Err<T,E>(err.Error),
+                _ => throw Result.Invalid(),
+            };
         }
 
         /// <summary>

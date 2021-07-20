@@ -13,6 +13,12 @@ namespace SaferVariants
         /// </summary>
         /// <param name="transform">The transformation to apply to the value.</param>
         IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform);
+        
+        /// <summary>
+        /// If the IResult is <see cref="Err{TValue,TError}"/>, the transform is applied to the inner value and returned as a new IResult.
+        /// </summary>
+        /// <param name="transform">The transformation to apply to the value.</param>
+        IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform);
 
         /// <summary>
         /// If the IResult is <see cref="Ok{TValue,TError}"/>, the transform is applied to the inner value and the new value is returned, returns the specified <paramref name="elseValue"/> otherwise.
@@ -104,6 +110,13 @@ namespace SaferVariants
             return transform(Value);
         }
 
+        public IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return Result.Ok<TValue, TResult>(Value);
+        }
+
         public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)
         {
             if (transform == null)
@@ -168,6 +181,13 @@ namespace SaferVariants
             if (transform == null)
                 throw new ArgumentNullException(nameof(transform));
             return Result.Err<TResult, TError>(Error);
+        }
+
+        public IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return Result.Err<TValue, TResult>(transform(Error));
         }
 
         public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)

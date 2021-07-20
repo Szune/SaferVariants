@@ -21,6 +21,22 @@ namespace SaferVariants.Tests
             var result = sut.Map(s => Result.Ok<int,string>(s * s));
             Assert.Equal(-101, result.ValueOr(-101));
         }
+        
+        [Fact]
+        public void MapErr_ShouldBeNewErr_ForErrVariant()
+        {
+            var sut = Result.Err<int,string>("interesting error");
+            var result = sut
+                .MapErr(err => err.Length)
+                .Map(num => Result.Ok<int,int>(num * num));
+
+            if (!result.IsErr(out var error))
+            {
+                Assert.True(false);
+            }
+            
+            Assert.Equal(17, error);
+        }
 
         [Fact]
         public void MapOr_ShouldReturnElseValue_ForErrVariant()
