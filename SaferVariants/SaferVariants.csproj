@@ -9,7 +9,7 @@
         <!-- NuGet stuff -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.7.0</PackageVersion>
+        <PackageVersion>1.8.0</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -20,9 +20,11 @@
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
         <PackageReleaseNotes>
-* Adds Flatten() extension methods to IOption and IResult to help reduce nesting
-* Adds IOption.HandleNone() to handle the None case in a fluent fashion
-* Adds IResult.MapErr() to transform errors
+Adds the following async extension methods to IOption and IResult:
+* HandleErrorAsync
+* ThenAsync
+
+These are found in the namespace SaferVariants.AsyncExtensions
         </PackageReleaseNotes>
         <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>
