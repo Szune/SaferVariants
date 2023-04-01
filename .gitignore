@@ -8,3 +8,4 @@ riderModule.iml
 *.swp
 *.exe
 .idea/
+*.vs/
