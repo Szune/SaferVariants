@@ -2,14 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
         <Configuration>Release</Configuration>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <!-- NuGet stuff -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageId>SaferVariants</PackageId>
-        <PackageVersion>1.8.0</PackageVersion>
+        <PackageVersion>2.0.0-alpha1</PackageVersion>
         <Title>SaferVariants</Title>
         <Authors>Carl Erik Patrik Iwarson</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -20,12 +21,8 @@
             An alternative to returning null and throwing exceptions as indications of a value being present and errors occurring.
         </Description>
         <PackageReleaseNotes>
-Adds the following async extension methods to IOption and IResult:
-* HandleErrorAsync
-* ThenAsync
-
-These are found in the namespace SaferVariants.AsyncExtensions
+            Breaking change: To reduce unnecessary checks, pattern matching of interfaces is no longer used and instead the structs' defaults represent the value not being present.
         </PackageReleaseNotes>
-        <Copyright>Copyright © 2021 Carl Erik Patrik Iwarson</Copyright>
+        <Copyright>Copyright © 2023 Carl Erik Patrik Iwarson</Copyright>
     </PropertyGroup>
 </Project>

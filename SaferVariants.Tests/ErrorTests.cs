@@ -5,111 +5,115 @@ namespace SaferVariants.Tests
     public class ErrTests
     {
         [Fact]
-        public void PatternMatchingOnErr()
+        public void ErrorOrThrow_ShouldThrow_IfErrorIsNull()
         {
-            IResult<int, string> sut = Result.Err<int, string>("big error ow");
-            if (sut is not Err<int,string>)
-            {
-                Assert.True(false, "We have a problem");
-            }
+            var sut = default(Result<int, string>);
+            Assert.Throws<ValueNullException>(() => sut.ErrorOrThrow());
+        }
+
+        [Fact]
+        public void TryGetError_ShouldThrow_IfErrorIsNull()
+        {
+            var sut = default(Result<int, string>);
+            Assert.Throws<ValueNullException>(() => sut.TryGetError(out var _));
         }
 
         [Fact]
         public void Map_ShouldRemainErr_ForErrVariant()
         {
-            IResult<int,string> sut = Result.Err<int,string>("biggest error owest");
-            var result = sut.Map(s => Result.Ok<int,string>(s * s));
+            var sut = Result.Error<int, string>("biggest error owest");
+            var result = sut.Map(s => Result.Ok<int, string>(s * s));
             Assert.Equal(-101, result.ValueOr(-101));
         }
-        
+
         [Fact]
         public void MapErr_ShouldBeNewErr_ForErrVariant()
         {
-            var sut = Result.Err<int,string>("interesting error");
+            var sut = Result.Error<int, string>("interesting error");
             var result = sut
                 .MapErr(err => err.Length)
-                .Map(num => Result.Ok<int,int>(num * num));
+                .Map(num => Result.Ok<int, int>(num * num));
 
-            if (!result.IsErr(out var error))
+            if (!result.TryGetError(out var error))
             {
                 Assert.True(false);
             }
-            
+
             Assert.Equal(17, error);
         }
 
         [Fact]
         public void MapOr_ShouldReturnElseValue_ForErrVariant()
         {
-            var sut = Result.Err<int, string>("no");
+            var sut = Result.Error<int, string>("no");
             var result = sut.MapOr(1, value => value * value);
             Assert.Equal(1, result);
         }
-        
+
         [Fact]
         public void HandleError_ShouldCallErrorHandler_ForErrVariant()
         {
             var i = 0;
-            Result.Err<int, string>("LBTM").HandleError(_ => i += 1);
+            Result.Error<int, string>("LBTM").HandleError(_ => i += 1);
             Assert.Equal(1, i);
         }
-        
+
         [Fact]
         public void HandleError_ShouldReturnNone_ForErrVariant()
         {
-            var sut = Result.Err<string, int>(33).HandleError(_ => {});
-            Assert.False(sut.IsSome());
+            var sut = Result.Error<string, int>(33).HandleError(_ => { });
+            Assert.False(sut.HasValue);
         }
 
         [Fact]
         public void Then_ShouldNotPerformAction_ForErrVariant()
         {
-            Result.Err<string, int>(1).Then(_ => Assert.True(false));
+            Result.Error<string, int>(1).IfOk(_ => Assert.True(false));
         }
 
         [Fact]
         public void IsOkWithOutBinding_ShouldBeFalseAndNotBindValue_ForErrVariant()
         {
-            var sut = Result.Err<string, int>(-1);
-            if (sut.IsOk(out var ok))
+            var sut = Result.Error<string, int>(-1);
+            if (sut.TryGetValue(out var ok))
             {
                 Assert.True(false);
             }
 
-            Assert.False(sut.IsOk(out _));
+            Assert.False(sut.TryGetValue(out _));
         }
 
         [Fact]
         public void IsOk_ShouldBeFalse_ForErrVariant()
         {
-            IResult<int, int> sut = Result.Err<int, int>(-1);
-            Assert.False(sut.IsOk());
+            var sut = Result.Error<int, int>(-1);
+            Assert.False(sut.IsOk);
         }
 
         [Fact]
         public void IsErrWithOutBinding_ShouldBeTrueAndBindValue_ForErrVariant()
         {
-            var sut = Result.Err<int, int>(3);
-            if (sut.IsErr(out var err))
+            var sut = Result.Error<int, int>(3);
+            if (sut.TryGetError(out var err))
             {
                 Assert.Equal(3, err);
             }
 
-            Assert.True(sut.IsErr(out _));
+            Assert.True(sut.TryGetError(out _));
         }
 
         [Fact]
         public void IsErr_ShouldBeTrue_ForErrVariant()
         {
-            var sut = Result.Err<int, int>(3);
-            Assert.True(sut.IsErr());
+            var sut = Result.Error<int, int>(3);
+            Assert.True(!sut.IsOk);
         }
 
 
         [Fact]
         public void ValueOr_ShouldBeElseValue_ForErrVariant()
         {
-            IResult<int, int> sut = Result.Err<int, int>(-1);
+            var sut = Result.Error<int, int>(-1);
             Assert.Equal(1, sut.ValueOr(1));
         }
     }

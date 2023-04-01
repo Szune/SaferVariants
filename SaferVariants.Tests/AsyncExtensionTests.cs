@@ -9,11 +9,11 @@ namespace SaferVariants.Tests
         public class OptionTests
         {
             [Fact]
-            public async Task ThenAsync_ShouldPerformAction_ForSomeVariant()
+            public async Task IfSomeAsync_ShouldPerformAction_ForSomeVariant()
             {
                 var option = Option.Some("something");
                 var str = "more than";
-                await option.ThenAsync(async s =>
+                await option.IfSomeAsync(async s =>
                 {
                     await Task.Delay(0);
                     str += " " + s;
@@ -23,11 +23,11 @@ namespace SaferVariants.Tests
             }
 
             [Fact]
-            public async Task ThenAsync_ShouldNotPerformAction_ForNoneVariant()
+            public async Task IfSomeAsync_ShouldNotPerformAction_ForNoneVariant()
             {
-                var option = Option.None<string>();
+                Option<string> option = null;
                 var str = "less than";
-                await option.ThenAsync(async s =>
+                await option.IfSomeAsync(async s =>
                 {
                     await Task.Delay(0);
                     str += " " + s;
@@ -42,7 +42,7 @@ namespace SaferVariants.Tests
             [Fact]
             public async Task HandleErrorAsync_ShouldPerformAction_ForErrVariant()
             {
-                var result = Result.Err<string, int>(3);
+                var result = Result.Error<string, int>(3);
                 var str = "less than";
                 await result.HandleErrorAsync(async s =>
                 {
@@ -68,11 +68,11 @@ namespace SaferVariants.Tests
             }
 
             [Fact]
-            public async Task ThenAsync_ShouldPerformAction_ForOkVariant()
+            public async Task IfOkAsync_ShouldPerformAction_ForOkVariant()
             {
                 var result = Result.Ok<string, int>("this");
                 var str = "more than";
-                await result.ThenAsync(async s =>
+                await result.IfOkAsync(async s =>
                 {
                     await Task.Delay(0);
                     str += " " + s;
@@ -82,11 +82,11 @@ namespace SaferVariants.Tests
             }
 
             [Fact]
-            public async Task ThenAsync_ShouldNotPerformAction_ForErrVariant()
+            public async Task IfOkAsync_ShouldNotPerformAction_ForErrVariant()
             {
-                var result = Result.Err<string, int>(3);
+                var result = Result.Error<string, int>(3);
                 var str = "less than";
-                await result.ThenAsync(async s =>
+                await result.IfOkAsync(async s =>
                 {
                     await Task.Delay(0);
                     str += " " + s;
@@ -96,7 +96,7 @@ namespace SaferVariants.Tests
             }
 
             [Fact]
-            public async Task ThenAsync_ShouldPerformAction_ForOkVariantAfterHandleErrorAsync()
+            public async Task IfOkAsync_ShouldPerformAction_ForOkVariantAfterHandleErrorAsync()
             {
                 var i = 0;
                 var result = Result.Ok<string, int>("this");
@@ -107,7 +107,7 @@ namespace SaferVariants.Tests
                         await Task.Delay(0);
                         i++;
                     })
-                    .ThenAsync(async s =>
+                    .IfSomeAsync(async s =>
                     {
                         await Task.Delay(0);
                         str += " " + s;

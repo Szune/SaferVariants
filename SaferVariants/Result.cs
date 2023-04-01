@@ -1,242 +1,222 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace SaferVariants
 {
-    /// <summary>
-    /// Intended as a discriminated union of either <see cref="Ok{TValue,TError}"/> or <see cref="Err{TValue,TError}"/>.
-    /// </summary>
-    public interface IResult<TValue, TError>
+    public readonly struct Result
     {
-        /// <summary>
-        /// If the IResult is <see cref="Ok{TValue,TError}"/>, the transform is applied to the inner value and returned as a new IResult.
-        /// </summary>
-        /// <param name="transform">The transformation to apply to the value.</param>
-        IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform);
-        
-        /// <summary>
-        /// If the IResult is <see cref="Err{TValue,TError}"/>, the transform is applied to the inner value and returned as a new IResult.
-        /// </summary>
-        /// <param name="transform">The transformation to apply to the value.</param>
-        IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform);
-
-        /// <summary>
-        /// If the IResult is <see cref="Ok{TValue,TError}"/>, the transform is applied to the inner value and the new value is returned, returns the specified <paramref name="elseValue"/> otherwise.
-        /// </summary>
-        /// <param name="elseValue">The value to return if the IResult is of type <see cref="Err{TValue,TError}"/>.</param>
-        /// <param name="transform">The transformation to apply to the value.</param>
-        TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform);
-
-        /// <summary>
-        /// If the IResult is <see cref="Err{TValue,TError}"/>, calls the specified error handler and returns <see cref="None{T}"/>, returns <see cref="Some{T}"/> otherwise.
-        /// </summary>
-        /// <param name="errorHandler">The error handler.</param>
-        IOption<TValue> HandleError(Action<TError> errorHandler);
-        
-        /// <summary>
-        /// If the IResult is <see cref="Ok{TValue,TError}"/>, the continuation is applied to the inner value.
-        /// </summary>
-        void Then(Action<TValue> action);
-        /// <summary>
-        /// Returns the inner value if the IResult is <see cref="Ok{TValue,TError}"/>, returns the specified <paramref name="elseValue"/> otherwise.
-        /// </summary>
-        TValue ValueOr(TValue elseValue);
-        /// <summary>
-        /// Returns true and binds the inner value to the out variable <paramref name="value"/> if the IResult is <see cref="Ok{TValue,TError}"/>, returns false otherwise.
-        /// </summary>
-        bool IsOk(out TValue value);
-        /// <summary>
-        /// Returns true if the IResult is <see cref="Ok{TValue,TError}"/>, returns false otherwise.
-        /// </summary>
-        bool IsOk();
-        /// <summary>
-        /// Returns true and binds the inner value to the out variable <paramref name="error"/> if the IResult is <see cref="Err{TValue,TError}"/>, returns false otherwise.
-        /// </summary>
-        bool IsErr(out TError error);
-        /// <summary>
-        /// Returns true if the IResult is <see cref="Err{TValue,TError}"/>, returns false otherwise.
-        /// </summary>
-        bool IsErr();
+        public static Result<Unit, TError> EmptyOk<TError>() => new Result<Unit, TError>(Unit.It);
+        public static Result<TValue, Unit> EmptyError<TValue>() => new Result<TValue, Unit>(Unit.It);
+        public static Result<TValue, TError> Ok<TValue, TError>(TValue value) => Result<TValue, TError>.Ok(value);
+        public static Result<TValue, TError> Error<TValue, TError>(TError error) => Result<TValue, TError>.Error(error);
     }
 
-    public static class Result
+    public readonly struct Result<TValue, TError>
     {
-        public static IResult<TValue, TError> Ok<TValue, TError>(TValue value)
+        internal readonly TValue _value;
+        internal readonly TError _error;
+        private readonly bool _isOk;
+        public bool IsOk => _isOk;
+        public bool IsError => !_isOk;
+
+        public static Result<TValue, TError> Ok(TValue value) => new Result<TValue, TError>(value);
+        public static Result<TValue, TError> Error(TError error) => new Result<TValue, TError>(error);
+
+        internal Result(TValue value)
         {
-            return new Ok<TValue, TError>(value);
+            _value = value ?? throw new ArgumentNullException(nameof(value));
+            _error = default!;
+            _isOk = true;
         }
 
-        public static IResult<TValue, TError> Err<TValue, TError>(TError error)
+        internal Result(TError error)
         {
-            return new Err<TValue, TError>(error);
+            _value = default!;
+            _error = error ?? throw new ArgumentNullException(nameof(error));
+            _isOk = false;
         }
 
-        public static InvalidResultVariantException Invalid([CallerMemberName] string method = "",
-            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0) =>
-            new InvalidResultVariantException(method, filePath, lineNumber);
-        
-        /// <summary>
-        /// Ensures that the <see cref="IResult{TValue,TError}"/> is a valid result variant, throws an exception otherwise.
-        /// </summary>
-        /// <exception cref="InvalidResultVariantException"></exception>
-        public static void EnsureValid<TValue,TError>(IResult<TValue,TError> value, [CallerMemberName] string method = "",
-            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        public static implicit operator Result<TValue, TError>(TValue value)
         {
-            switch (value)
+            return new Result<TValue, TError>(value);
+        }
+
+        public static implicit operator Result<TValue, TError>(TError error)
+        {
+            return new Result<TValue, TError>(error);
+        }
+
+        public TValue ValueOrThrow()
+        {
+            return IsOk ? _value : throw new SuccessValueNotPresentException();
+        }
+
+        public TValue ValueOr(TValue elseValue = default(TValue))
+        {
+            return IsOk ? _value : elseValue;
+        }
+
+        public TValue ValueOr(Func<TValue> elseValue)
+        {
+            if (elseValue == null)
+                throw new ArgumentNullException(nameof(elseValue));
+            return IsOk ? _value : elseValue();
+        }
+
+        public bool TryGetValue([NotNullWhen(true)] out TValue value)
+        {
+            value = _value;
+            return IsOk;
+        }
+
+
+        /// <exception cref="ValueNullException">The error value was null. This can happen if creating a <see cref="Result"/> with the "default" keyword.</exception>
+        /// <exception cref="ErrorValueNotPresentException">The <see cref="Result"/> was an Ok result.</exception>
+        public TError ErrorOrThrow()
+        {
+            return !IsOk
+                ? _error ?? throw new ValueNullException()
+                : throw new ErrorValueNotPresentException();
+        }
+
+        /// <exception cref="ValueNullException">The error value was null. This can happen if creating a <see cref="Result"/> with the "default" keyword.</exception>
+        public bool TryGetError([NotNullWhen(true)] out TError error)
+        {
+            error = _error;
+            if (IsOk)
             {
-                case Ok<TValue,TError> _:
-                case Err<TValue,TError> _:
-                    break;
-                default:
-                    throw Invalid(method, filePath, lineNumber);
+                return false;
+            }
+
+            if (error == null) throw new ValueNullException();
+            return true;
+        }
+
+        public void Match(Action<TValue> ifOk, Action<TError> ifError)
+        {
+            if (ifOk == null)
+                throw new ArgumentNullException(nameof(ifOk));
+            if (ifError == null)
+                throw new ArgumentNullException(nameof(ifError));
+
+            if (IsOk)
+            {
+                ifOk(_value);
+            }
+            else
+            {
+                ifError(_error);
             }
         }
-    }
 
-    ///<inheritdoc cref="IResult{TValue,TError}"/>
-    public readonly struct Ok<TValue, TError> : IResult<TValue, TError>
-    {
-        public Ok(TValue value)
+        public TResult Match<TResult>(Func<TValue, TResult> ifOk, Func<TError, TResult> ifError)
         {
-            Value = value;
+            if (ifOk == null)
+                throw new ArgumentNullException(nameof(ifOk));
+            if (ifError == null)
+                throw new ArgumentNullException(nameof(ifError));
+
+            return IsOk
+                ? ifOk(_value)
+                : ifError(_error);
         }
 
-        public TValue Value { get; }
+        public Result<TResultValue, TError> Bind<TResultValue>(
+            Func<TValue, Result<TResultValue, TError>> bind)
+        {
+            if (bind == null)
+                throw new ArgumentNullException(nameof(bind));
 
-        public IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform)
+            return IsOk
+                ? bind(_value)
+                : _error;
+        }
+
+        public Result<TResultValue, TResultError> Map<TResultValue, TResultError>(
+            Func<TValue, TResultValue> mapOk, Func<TError, TResultError> mapError)
+        {
+            if (mapOk == null)
+                throw new ArgumentNullException(nameof(mapOk));
+            if (mapError == null)
+                throw new ArgumentNullException(nameof(mapError));
+
+            return IsOk
+                ? new Result<TResultValue, TResultError>(mapOk(_value))
+                : new Result<TResultValue, TResultError>(mapError(_error));
+        }
+
+        public Result<TResult, TError> Map<TResult>(Func<TValue, TResult> transform)
         {
             if (transform == null)
                 throw new ArgumentNullException(nameof(transform));
-            return transform(Value);
+
+            return IsOk
+                ? new Result<TResult, TError>(transform(_value))
+                : new Result<TResult, TError>(_error);
         }
 
-        public IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform)
+        public Result<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform)
         {
             if (transform == null)
                 throw new ArgumentNullException(nameof(transform));
-            return Result.Ok<TValue, TResult>(Value);
+
+            return IsOk
+                ? Result<TValue, TResult>.Ok(_value)
+                : Result<TValue, TResult>.Error(transform(_error));
         }
 
         public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)
         {
             if (transform == null)
                 throw new ArgumentNullException(nameof(transform));
-            return transform(Value);
+
+            return IsOk
+                ? transform(_value)
+                : elseValue;
         }
 
-        public IOption<TValue> HandleError(Action<TError> errorHandler)
-        {
-            if (errorHandler == null)
-                throw new ArgumentNullException(nameof(errorHandler));
-            return Option.Some(Value);
-        }
-
-        public void Then(Action<TValue> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-            action(Value);
-        }
-
-        public TValue ValueOr(TValue elseValue)
-        {
-            return Value;
-        }
-
-        public bool IsOk(out TValue value)
-        {
-            value = Value;
-            return true;
-        }
-
-        public bool IsOk()
-        {
-            return true;
-        }
-
-        public bool IsErr(out TError error)
-        {
-            error = default;
-            return false;
-        }
-
-        public bool IsErr()
-        {
-            return false;
-        }
-    }
-
-    ///<inheritdoc cref="IResult{TValue,TError}"/>
-    public readonly struct Err<TValue, TError> : IResult<TValue, TError>
-    {
-        public Err(TError error)
-        {
-            Error = error;
-        }
-
-        public TError Error { get; }
-
-        public IResult<TResult, TError> Map<TResult>(Func<TValue, IResult<TResult, TError>> transform)
+        public TResult MapOr<TResult>(Func<TResult> elseValue, Func<TValue, TResult> transform)
         {
             if (transform == null)
                 throw new ArgumentNullException(nameof(transform));
-            return Result.Err<TResult, TError>(Error);
+            if (elseValue == null)
+                throw new ArgumentNullException(nameof(elseValue));
+
+            return IsOk
+                ? transform(_value)
+                : elseValue();
         }
 
-        public IResult<TValue, TResult> MapErr<TResult>(Func<TError, TResult> transform)
+        public Result<TValue, TError> IfOk(Action<TValue> okHandler)
         {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return Result.Err<TValue, TResult>(transform(Error));
+            if (okHandler == null) throw new ArgumentNullException(nameof(okHandler));
+            if (IsOk) okHandler(_value);
+            return this;
         }
 
-        public TResult MapOr<TResult>(TResult elseValue, Func<TValue, TResult> transform)
+        public Result<TValue, TError> IfError(Action<TError> errorHandler)
         {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return elseValue;
+            if (errorHandler == null) throw new ArgumentNullException(nameof(errorHandler));
+            if (!IsOk) errorHandler(_error);
+            return this;
         }
 
-        public IOption<TValue> HandleError(Action<TError> errorHandler)
+        public Option<TValue> HandleError(Action<TError> errorHandler)
         {
-            if (errorHandler == null)
-                throw new ArgumentNullException(nameof(errorHandler));
-            
-            errorHandler.Invoke(Error);
-            return Option.None<TValue>();
+            if (errorHandler == null) throw new ArgumentNullException(nameof(errorHandler));
+            if (IsOk) return new Option<TValue>(_value);
+
+            errorHandler(_error);
+            return Option<TValue>.None;
         }
 
-        public void Then(Action<TValue> action)
+        public Option<TError> HandleOk(Action<TValue> okHandler)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-        }
+            if (okHandler == null) throw new ArgumentNullException(nameof(okHandler));
+            if (IsError) return new Option<TError>(_error);
 
-        public TValue ValueOr(TValue elseValue)
-        {
-            return elseValue;
-        }
-
-        public bool IsOk(out TValue value)
-        {
-            value = default;
-            return false;
-        }
-
-        public bool IsOk()
-        {
-            return false;
-        }
-
-        public bool IsErr(out TError error)
-        {
-            error = Error;
-            return true;
-        }
-
-        public bool IsErr()
-        {
-            return true;
+            okHandler(_value);
+            return Option<TError>.None;
         }
     }
 }

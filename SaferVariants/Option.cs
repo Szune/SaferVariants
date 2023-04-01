@@ -1,212 +1,142 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace SaferVariants
 {
-    /// <summary>
-    /// Intended as a discriminated union of either <see cref="Some{T}"/> or <see cref="None{T}"/>.
-    /// </summary>
-    public interface IOption<T>
+    public readonly struct Option
     {
-        /// <summary>
-        /// If the IOption is <see cref="Some{T}"/>, the transform is applied to the inner value and returned as a new IOption.
-        /// </summary>
-        /// <param name="transform">The transformation to apply to the value.</param>
-        IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform);
-        
-        /// <summary>
-        /// If the IOption is <see cref="Some{T}"/>, the transform is applied to the inner value and the new value is returned, returns the specified <paramref name="elseValue"/> otherwise.
-        /// </summary>
-        /// <param name="elseValue">The value to return if the IOption is of type <see cref="None{T}"/>.</param>
-        /// <param name="transform">The transformation to apply to the value.</param>
-        TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform);
-
-        /// <summary>
-        /// Performs an action if the IOption is <see cref="None{T}"/>.
-        /// </summary>
-        /// <param name="noneHandler">The action to perform.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        IOption<T> HandleNone(Action noneHandler);
-        
-        /// <summary>
-        /// If the IOption is <see cref="Some{T}"/>, the continuation is applied to the inner value.
-        /// </summary>
-        void Then(Action<T> action);
-        /// <summary>
-        /// Returns the inner value if the IOption is <see cref="Some{T}"/>, returns the specified <paramref name="elseValue"/> otherwise.
-        /// </summary>
-        T ValueOr(T elseValue);
-        /// <summary>
-        /// Returns true and binds the inner value to the out variable <paramref name="value"/> if the IOption is <see cref="Some{T}"/>, returns false otherwise.
-        /// </summary>
-        bool IsSome(out T value);
-        /// <summary>
-        /// Returns true if the IOption is <see cref="Some{T}"/>, returns false otherwise.
-        /// </summary>
-        bool IsSome();
+        public static Option None { get; } = new Option();
+        public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+        public static Option<T> NoneIfNull<T>(T value) => value != null ? new Option<T>(value) : Option<T>.None;
     }
 
-    internal static class Option<T>
+    public readonly struct Option<T>
     {
-        internal static readonly IOption<T> None = new None<T>();
-    }
+        internal readonly T _value;
+        public bool HasValue { get; }
 
-    /// <summary>
-    /// A helper class to instantiate <see cref="IOption{T}"/> variants.
-    /// </summary>
-    public static class Option
-    {
-        /// <summary>
-        /// Returns the specified value wrapped in the <see cref="Some{T}"/> variant.
-        /// </summary>
-        public static IOption<T> Some<T>(T value)
+        public static readonly Option<T> None = new Option<T>();
+        public static Option<T> Some(T value) => new Option<T>(value);
+
+        internal Option(T value)
         {
-            return new Some<T>(value);
+            _value = value ?? throw new ArgumentNullException(nameof(value));
+            HasValue = true;
         }
 
-        /// <summary>
-        /// Returns the <see cref="None{T}"/> variant for the specified type.
-        /// </summary>
-        public static IOption<T> None<T>()
+        public static implicit operator Option<T>(Option _) => None;
+
+        public static implicit operator Option<T>(T value)
         {
-            return Option<T>.None;
+            return value == null ? None : Some(value);
         }
 
-        /// <summary>
-        /// Returns <see cref="SaferVariants.None{T}"/> if the value is null, returns the value wrapped in <see cref="SaferVariants.Some{T}"/> otherwise.
-        /// </summary>
-        public static IOption<T> NoneIfNull<T>(T value)
+
+        public T ValueOr(T elseValue = default(T))
         {
-            return value != null
-                ? new Some<T>(value)
-                : Option<T>.None;
+            return HasValue ? _value : elseValue;
         }
 
-        /// <summary>
-        /// Returns an <see cref="InvalidOptionVariantException"/> with information about the call site.
-        /// </summary>
-        public static InvalidOptionVariantException Invalid([CallerMemberName] string method = "",
-            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0) =>
-            new InvalidOptionVariantException(method, filePath, lineNumber);
-
-        /// <summary>
-        /// Ensures that the <see cref="IOption{T}"/> is a valid option variant, throws an exception otherwise.
-        /// </summary>
-        /// <exception cref="InvalidOptionVariantException"></exception>
-        public static void EnsureValid<T>(IOption<T> value, [CallerMemberName] string method = "",
-            [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        public T ValueOr(Func<T> elseValue)
         {
-            switch (value)
+            if (elseValue == null)
+                throw new ArgumentNullException(nameof(elseValue));
+            return HasValue ? _value : elseValue();
+        }
+
+        public T ValueOrThrow()
+        {
+            return HasValue
+                ? _value
+                : throw new ValueNotPresentException();
+        }
+
+        public bool TryGetValue([NotNullWhen(true)] out T value)
+        {
+            value = _value;
+            return HasValue;
+        }
+
+        public Option<TResult> Bind<TResult>(Func<T, Option<TResult>> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return HasValue ? transform(_value) : Option<TResult>.None;
+        }
+
+        public Option<TResult> Map<TResult>(Func<T, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return HasValue
+                ? new Option<TResult>(transform(_value))
+                : Option<TResult>.None;
+        }
+
+        public TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            return HasValue ? transform(_value) : elseValue;
+        }
+
+        public TResult MapOr<TResult>(Func<TResult> elseValue, Func<T, TResult> transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+            if (elseValue == null)
+                throw new ArgumentNullException(nameof(elseValue));
+            return HasValue
+                ? transform(_value)
+                : elseValue();
+        }
+
+        public void Match(Action<T> ifSome, Action ifNone)
+        {
+            if (ifSome == null)
+                throw new ArgumentNullException(nameof(ifSome));
+            if (ifNone == null)
+                throw new ArgumentNullException(nameof(ifNone));
+
+            if (HasValue)
             {
-                case Some<T> _:
-                case None<T> _:
-                    break;
-                default:
-                    throw Invalid(method, filePath, lineNumber);
+                ifSome(_value);
+            }
+            else
+            {
+                ifNone();
             }
         }
-    }
 
-    ///<inheritdoc cref="IOption{T}"/>
-    public readonly struct Some<T> : IOption<T>
-    {
-        public Some(T value)
+        public TResult Match<TResult>(Func<T, TResult> ifSome, Func<TResult> ifNone)
         {
-            Value = value;
+            if (ifSome == null)
+                throw new ArgumentNullException(nameof(ifSome));
+            if (ifNone == null)
+                throw new ArgumentNullException(nameof(ifNone));
+
+            return HasValue
+                ? ifSome(_value)
+                : ifNone();
         }
 
-        public T Value { get; }
-
-        public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
-        {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return transform(Value);
-        }
-
-        public TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform)
-        {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return transform(Value);
-        }
-
-        public IOption<T> HandleNone(Action noneHandler)
+        public Option<T> IfNone(Action noneHandler)
         {
             if (noneHandler == null)
                 throw new ArgumentNullException(nameof(noneHandler));
+            if (!HasValue)
+                noneHandler();
+
             return this;
         }
 
-        public bool IsSome(out T value)
-        {
-            value = Value;
-            return true;
-        }
-
-        public void Then(Action<T> action)
+        public Option<T> IfSome(Action<T> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
-            action(Value);
-        }
-
-        public T ValueOr(T elseValue)
-        {
-            return Value;
-        }
-
-        public bool IsSome()
-        {
-            return true;
-        }
-    }
-
-    ///<inheritdoc cref="IOption{T}"/>
-    public struct None<T> : IOption<T>
-    {
-        public IOption<TResult> Map<TResult>(Func<T, IOption<TResult>> transform)
-        {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return Option.None<TResult>();
-        }
-
-        public TResult MapOr<TResult>(TResult elseValue, Func<T, TResult> transform)
-        {
-            if (transform == null)
-                throw new ArgumentNullException(nameof(transform));
-            return elseValue;
-        }
-        
-        public IOption<T> HandleNone(Action noneHandler)
-        {
-            if (noneHandler == null)
-                throw new ArgumentNullException(nameof(noneHandler));
-            noneHandler();
+            if (HasValue)
+                action(_value);
             return this;
-        }
-
-        public bool IsSome(out T value)
-        {
-            value = default;
-            return false;
-        }
-        
-        public void Then(Action<T> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-        }
-
-        public T ValueOr(T elseValue)
-        {
-            return elseValue;
-        }
-
-        public bool IsSome()
-        {
-            return false;
         }
     }
 }
